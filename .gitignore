@@ -29,3 +29,6 @@ possibleDuplicates/
 # Personal directories
 \!Uploaded/
 
+# Environment variables
+.env
+

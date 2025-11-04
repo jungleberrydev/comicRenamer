@@ -39,6 +39,19 @@ A Python script to automatically rename and organize comic book files (`.cbz` an
 
 2. (Optional) Set up the external comics directory for duplicate detection:
 
+   **Option 1: Using a `.env` file (Recommended)**
+
+   Copy the example file and edit it:
+
+   ```bash
+   cp .env.example .env
+   # Then edit .env and set your path
+   ```
+
+   The `.env` file is already in `.gitignore`, so your personal path won't be committed.
+
+   **Option 2: Using environment variable**
+
    ```bash
    export COMIC_SORTER_EXTERNAL_DIR="/path/to/your/external/comics"
    ```
@@ -48,6 +61,8 @@ A Python script to automatically rename and organize comic book files (`.cbz` an
    ```bash
    echo 'export COMIC_SORTER_EXTERNAL_DIR="/path/to/your/external/comics"' >> ~/.zshrc
    ```
+
+   The script checks the `.env` file first, then falls back to the environment variable.
 
 ## Usage
 
@@ -130,17 +145,40 @@ The script checks for duplicates by:
 
 ## Configuration
 
-### Environment Variable (Optional)
+### External Comics Directory (Optional)
 
-Duplicate detection is **completely optional**. If you don't want to check for duplicates, you can simply leave the `COMIC_SORTER_EXTERNAL_DIR` environment variable unset. The script will work normally and skip duplicate checking.
+Duplicate detection is **completely optional**. If you don't want to check for duplicates, you can simply leave the configuration unset. The script will work normally and skip duplicate checking.
 
-If you want to enable duplicate detection, set `COMIC_SORTER_EXTERNAL_DIR` to point to your main comics collection directory:
+**Preferred Method: `.env` file**
+
+1. Copy the example file:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit `.env` and set your external comics directory:
+   ```bash
+   COMIC_SORTER_EXTERNAL_DIR="/Volumes/External Drive/Comics"
+   ```
+
+The `.env` file is automatically ignored by git, so your personal path won't be committed to the repository.
+
+**Alternative: Environment Variable**
+
+You can also set it as an environment variable:
 
 ```bash
 export COMIC_SORTER_EXTERNAL_DIR="/Volumes/External Drive/Comics"
 ```
 
-This directory is used for duplicate detection. The script will check if files with the same title and issue number already exist there (ignoring file extensions like `.cbz` vs `.cbr`). If the environment variable is not set or the directory doesn't exist, duplicate checking is automatically skipped.
+**Priority**: The script checks in this order:
+
+1. `.env` file (if it exists)
+2. Environment variable `COMIC_SORTER_EXTERNAL_DIR`
+3. If neither is set, duplicate checking is skipped
+
+This directory is used for duplicate detection. The script will check if files with the same title and issue number already exist there (ignoring file extensions like `.cbz` vs `.cbr`). If the configuration is not set or the directory doesn't exist, duplicate checking is automatically skipped.
 
 ## Output
 

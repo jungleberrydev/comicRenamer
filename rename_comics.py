@@ -8,9 +8,38 @@ from typing import Optional, Tuple
 
 
 COMIC_EXTENSIONS = {".cbr", ".cbz"}
-# EXTERNAL_COMICS_DIR should be set via environment variable COMIC_SORTER_EXTERNAL_DIR
-# Example: export COMIC_SORTER_EXTERNAL_DIR="/path/to/your/comics"
-EXTERNAL_COMICS_DIR = os.environ.get("COMIC_SORTER_EXTERNAL_DIR")
+
+
+def load_env_file(env_path: str = ".env") -> dict:
+    """
+    Load environment variables from a .env file.
+    Returns a dictionary of key-value pairs.
+    """
+    env_vars = {}
+    if os.path.isfile(env_path):
+        try:
+            with open(env_path, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    # Skip empty lines and comments
+                    if not line or line.startswith("#"):
+                        continue
+                    # Parse KEY=VALUE format
+                    if "=" in line:
+                        key, value = line.split("=", 1)
+                        key = key.strip()
+                        value = value.strip().strip('"').strip("'")
+                        env_vars[key] = value
+        except Exception:
+            # If we can't read the file, just return empty dict
+            pass
+    return env_vars
+
+
+# Load .env file if it exists
+env_file_vars = load_env_file()
+# Check .env file first, then environment variable
+EXTERNAL_COMICS_DIR = env_file_vars.get("COMIC_SORTER_EXTERNAL_DIR") or os.environ.get("COMIC_SORTER_EXTERNAL_DIR")
 
 
 def parse_filename(stem: str) -> Optional[Tuple[str, int, Optional[str]]]:
