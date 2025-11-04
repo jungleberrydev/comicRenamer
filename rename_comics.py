@@ -8,7 +8,9 @@ from typing import Optional, Tuple
 
 
 COMIC_EXTENSIONS = {".cbr", ".cbz"}
-EXTERNAL_COMICS_DIR = "/Volumes/Crucial X9 Pro For Mac/Comics"
+# EXTERNAL_COMICS_DIR should be set via environment variable COMIC_SORTER_EXTERNAL_DIR
+# Example: export COMIC_SORTER_EXTERNAL_DIR="/path/to/your/comics"
+EXTERNAL_COMICS_DIR = os.environ.get("COMIC_SORTER_EXTERNAL_DIR")
 
 
 def parse_filename(stem: str) -> Optional[Tuple[str, int, Optional[str]]]:

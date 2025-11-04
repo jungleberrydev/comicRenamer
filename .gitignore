@@ -26,3 +26,6 @@ possibleDuplicates/
 *.swo
 *~
 
+# Personal directories
+\!Uploaded/
+
