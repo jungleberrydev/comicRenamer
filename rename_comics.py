@@ -42,6 +42,46 @@ env_file_vars = load_env_file()
 EXTERNAL_COMICS_DIR = env_file_vars.get("COMIC_SORTER_EXTERNAL_DIR") or os.environ.get("COMIC_SORTER_EXTERNAL_DIR")
 
 
+def parse_annual_filename(stem: str) -> Optional[Tuple[str, str, int, Optional[str]]]:
+    """
+    Extract (base_title, full_title, issue_number, year) from a filename stem for annual issues.
+    Handles patterns like "Title YYYY Annual 001 (YYYY)" where the year appears in the title.
+    
+    base_title is used for folder organization (e.g., "Absolute Batman")
+    full_title includes the year and "Annual" for the filename (e.g., "Absolute Batman 2025 Annual")
+
+    Expected pattern examples:
+    - Title 2025 Annual 001 (2025)
+    - Title 2025 Annual #001 (2025)
+    - Absolute Batman 2025 Annual 001 (2025)
+
+    Returns None if not parseable.
+    """
+    # Pattern: Title + YYYY + " Annual " + optional # + issue number + optional (YYYY)
+    match = re.search(r"^(?P<title>.+?)\s+(?P<title_year>\d{4})\s+Annual\s+#?(?P<issue>\d{1,4})\s*(?:\((?P<year>\d{4})\)\)?)?", stem, flags=re.IGNORECASE)
+    if not match:
+        return None
+
+    title_base = match.group("title").strip()
+    title_year = match.group("title_year")
+    issue_str = match.group("issue")
+    year = match.group("year")  # May be None
+
+    try:
+        issue_num = int(issue_str)
+    except ValueError:
+        return None
+
+    # Base title for folder organization (e.g., "Absolute Batman")
+    base_title = re.sub(r"\s+", " ", title_base)
+    
+    # Full title for filename (e.g., "Absolute Batman 2025 Annual")
+    full_title = f"{title_base} {title_year} Annual"
+    full_title = re.sub(r"\s+", " ", full_title)
+
+    return base_title, full_title, issue_num, year
+
+
 def parse_filename(stem: str) -> Optional[Tuple[str, int, Optional[str]]]:
     """
     Extract (title, issue_number, year) from a filename stem.
@@ -278,6 +318,18 @@ def plan_new_name_and_title(stem: str) -> Optional[Tuple[str, str]]:
         title, vol_num, year = vol
         title = capitalize_title(title)
         return title, f"{title} Vol. {vol_num} ({year})"
+
+    # Check for annual issues before regular issues (annual has more specific pattern)
+    annual = parse_annual_filename(stem)
+    if annual:
+        base_title, full_title, issue_num, year = annual
+        # Use base_title for folder, full_title for filename
+        base_title = capitalize_title(base_title)
+        full_title = capitalize_title(full_title)
+        if year:
+            return base_title, f"{full_title} {format_issue(issue_num)} ({year})"
+        else:
+            return base_title, f"{full_title} {format_issue(issue_num)}"
 
     iss = parse_filename(stem)
     if iss:
